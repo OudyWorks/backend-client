@@ -14,7 +14,7 @@ class BackendClient {
                         options.url += '?'+param(options.data)
                     delete options.data
                 }
-                this.events.once(id, resolve)
+                this.events[options.subscribe ? 'on' : 'once'](id, options.resolve || resolve)
                 let body = undefined,
                     headers = new Headers(options.headers || {'Accept': 'application/json'})
                 if(options.data) {
