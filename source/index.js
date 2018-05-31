@@ -1,5 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import param from 'jquery-param'
+import serialize from 'form-serialize'
 
 class BackendClient {
     static request(options) {
@@ -13,19 +14,48 @@ class BackendClient {
                         options.url += '?'+param(options.data)
                     delete options.data
                 }
-                console.log(options.url)
                 this.events.once(id, resolve)
-                fetch(options.url, {
-                    method: options.method,
-                    // body: JSON.stringify(options.data),
-                    headers:{
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                }).then(
-                    response =>
-                        this.events.emit(id, response.json())
-                ).catch(reject)
+                let body = undefined,
+                    headers = new Headers(options.headers || {'Accept': 'application/json'})
+                if(options.data) {
+                    if(options.data.constructor)
+                        switch (options.data.constructor.name) {
+                            case 'Object':
+                                body = options.data
+                                headers.append('Content-Type', 'application/json')
+                                break
+                            case 'URLSearchParams':
+                            case 'FormData':
+                            case 'Blob':
+                                body = options.data
+                                break
+                            case 'HTMLFormElement':
+                                // body = new URLSearchParams(new FormData(options.data))
+                                body = serialize(options.data, { hash: true })
+                                headers.append('Content-Type', 'application/json')
+                                break
+                        }
+                }
+                if(this.websocket && this.websocket.readyState == WebSocket.OPEN)
+                    this.websocket.send(JSON.stringify({
+                        id,
+                        method: options.method,
+                        url: options.url,
+                        body
+                    }))
+                else {
+                    if(body)
+                        body.constructor.name == 'Object' ? JSON.stringify(body) : body
+                    fetch(options.url, {
+                        credentials: 'same-origin',
+                        method: options.method,
+                        body,
+                        headers
+                    }).then(
+                        response =>
+                            this.events.emit(id, response.json())
+                    ).catch(reject)
+                }
             }
         )
     }
