@@ -31,7 +31,7 @@ class BackendClient {
                                 break
                             case 'HTMLFormElement':
                                 // body = new URLSearchParams(new FormData(options.data))
-                                body = serialize(options.data, { hash: true })
+                                body = serialize(options.data, { hash: true, empty: true })
                                 headers.append('Content-Type', 'application/json')
                                 break
                         }
