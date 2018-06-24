@@ -45,7 +45,7 @@ class BackendClient {
                     }))
                 else {
                     if(body)
-                        body.constructor.name == 'Object' ? JSON.stringify(body) : body
+                        body = body.constructor.name == 'Object' ? JSON.stringify(body) : body
                     fetch(options.url, {
                         credentials: 'same-origin',
                         method: options.method,
