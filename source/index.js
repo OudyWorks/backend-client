@@ -53,7 +53,10 @@ class BackendClient {
                         headers
                     }).then(
                         response =>
-                            this.events.emit(id, response.json())
+                            response.json().then(
+                                response =>
+                                    this.events.emit(id, response)
+                            )
                     ).catch(reject)
                 }
             }
