@@ -76,7 +76,7 @@ class BackendClient {
             data
         })
     }
-    static connect(url) {
+    static connect(url, websocket = true) {
         if(!url) {
             url = location.href.replace(location.pathname, '')
         }
@@ -85,7 +85,7 @@ class BackendClient {
         return new Promise(
             (resolve, reject) => {
 
-                if(WebSocket) {
+                if(WebSocket && websocket) {
                     this.websocket = new WebSocket(this.server.replace('http', 'ws'))
                     this.websocket.onmessage = message => {
                         message = JSON.parse(message.data)
